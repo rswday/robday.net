@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yatzy Scorecard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f0e8;
+      --surface: #fff;
+      --primary: #2c5f2e;
+      --primary-light: #4a8c4d;
+      --accent: #d4a843;
+      --border: #ccc;
+      --muted: #888;
+      --section-bg: #2c5f2e;
+      --section-text: #fff;
+      --bonus-bg: #e8f5e9;
+      --total-bg: #1a3a1c;
+      --danger: #c0392b;
+      --radius: 8px;
+      --font: system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      min-height: 100vh;
+      color: #222;
+    }
+
+    /* ── Setup screen ── */
+    #setup-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .logo {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -1px;
+      margin-bottom: 4px;
+    }
+    .logo span { color: var(--accent); }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 36px;
+    }
+
+    .setup-card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 28px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    .setup-card h2 {
+      font-size: 1.1rem;
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+
+    .player-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .player-row input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-family: var(--font);
+      transition: border-color 0.15s;
+    }
+
+    .player-row input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .btn-remove {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: color 0.15s;
+      line-height: 1;
+    }
+    .btn-remove:hover { color: var(--danger); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 11px 20px;
+      border-radius: var(--radius);
+      border: none;
+      font-size: 0.95rem;
+      font-family: var(--font);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-secondary {
+      background: var(--bonus-bg);
+      color: var(--primary);
+      margin-top: 4px;
+      width: 100%;
+    }
+    .btn-secondary:hover { background: #d0ebd1; }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      margin-top: 20px;
+      width: 100%;
+      font-size: 1.05rem;
+      padding: 14px;
+    }
+    .btn-primary:hover { background: var(--primary-light); }
+    .btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; }
+
+    /* ── Scorecard screen ── */
+    #scorecard-screen {
+      display: none;
+      padding: 16px;
+      max-width: 100%;
+    }
+
+    .scorecard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .scorecard-header h1 {
+      font-size: 1.4rem;
+      color: var(--primary);
+      font-weight: 800;
+    }
+
+    .btn-new-game {
+      background: none;
+      border: 1.5px solid var(--border);
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      font-family: var(--font);
+      cursor: pointer;
+    }
+    .btn-new-game:hover { border-color: var(--primary); color: var(--primary); }
+
+    .table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 320px;
+      background: var(--surface);
+    }
+
+    /* Section header rows */
+    tr.section-header td {
+      background: var(--section-bg);
+      color: var(--section-text);
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 8px 10px;
+    }
+
+    /* Category label column */
+    td.cat-label {
+      padding: 0 10px;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      min-width: 130px;
+      color: #333;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    td.cat-label .cat-name { font-weight: 600; }
+    td.cat-label .cat-hint { font-size: 0.72rem; color: var(--muted); display: block; }
+
+    /* Example dice */
+    .dice-row {
+      display: flex;
+      gap: 2px;
+      margin-top: 3px;
+      flex-wrap: wrap;
+    }
+    .die {
+      width: 16px;
+      height: 16px;
+      display: block;
+      flex: 0 0 auto;
+    }
+    .die rect { fill: #fff; stroke: var(--border); stroke-width: 6; }
+    .die circle { fill: var(--primary); }
+
+    /* Score input cells */
+    td.score-cell {
+      padding: 4px;
+      border-bottom: 1px solid #f0f0f0;
+      border-left: 1px solid #f0f0f0;
+      min-width: 64px;
+    }
+
+    td.score-cell input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: center;
+      font-size: 1rem;
+      font-family: var(--font);
+      font-weight: 600;
+      color: var(--primary);
+      padding: 8px 4px;
+      border-radius: 4px;
+      transition: background 0.15s;
+    }
+    td.score-cell input:focus {
+      outline: none;
+      background: #f0f9f0;
+    }
+    td.score-cell input::placeholder { color: #ddd; font-weight: 400; }
+
+    /* Subtotal / bonus rows */
+    tr.subtotal-row td {
+      background: #f8f8f8;
+      font-weight: 600;
+      font-size: 0.88rem;
+    }
+    tr.subtotal-row td.cat-label { color: var(--muted); }
+    tr.subtotal-row td.score-cell { color: #333; text-align: center; padding: 7px 4px; }
+
+    tr.bonus-row td {
+      background: var(--bonus-bg);
+    }
+    tr.bonus-row td.cat-label { color: var(--primary); }
+    tr.bonus-row td.score-cell { color: var(--primary); font-weight: 700; text-align: center; padding: 7px 4px; }
+
+    tr.total-row td {
+      background: var(--total-bg);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 10px 10px;
+    }
+    tr.total-row td.score-cell { text-align: center; }
+
+    /* Player name header */
+    th.player-name-cell {
+      background: var(--surface);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 10px 6px;
+      border-bottom: 2px solid var(--primary);
+      border-left: 1px solid #f0f0f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 90px;
+    }
+
+    th.corner-cell {
+      background: var(--surface);
+      border-bottom: 2px solid var(--primary);
+      min-width: 130px;
+    }
+
+    /* Calculate button */
+    .calculate-wrap {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-calculate {
+      background: var(--accent);
+      color: #fff;
+      font-size: 1.1rem;
+      padding: 15px 40px;
+      border-radius: 50px;
+      box-shadow: 0 4px 16px rgba(212,168,67,0.35);
+    }
+    .btn-calculate:hover { background: #c49a30; }
+
+    /* Results panel */
+    #results-panel {
+      display: none;
+      margin-top: 20px;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    }
+
+    #results-panel h2 {
+      color: var(--primary);
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    #results-panel h2 .dice-row { margin-top: 0; }
+    #results-panel h2 .die { width: 20px; height: 20px; }
+    .winner-dice { margin-top: 6px; }
+    .winner-dice .die { width: 14px; height: 14px; }
+
+    .results-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .result-card {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .result-card.winner {
+      border-color: var(--accent);
+      background: #fffbee;
+    }
+
+    .result-card .player-name { font-weight: 700; font-size: 1rem; }
+    .result-card .winner-badge {
+      font-size: 0.72rem;
+      background: var(--accent);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    .result-card .score-breakdown { text-align: right; }
+    .result-card .total-score { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+    .result-card .breakdown-detail { font-size: 0.75rem; color: var(--muted); }
+
+    @media (max-width: 480px) {
+      .logo { font-size: 2.2rem; }
+      .setup-card { padding: 20px; }
+      #scorecard-screen { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ SETUP SCREEN ══════════ -->
+<div id="setup-screen">
+  <div class="logo">Yat<span>zy</span></div>
+  <p class="subtitle">Scandinavian Scorecard</p>
+
+  <div class="setup-card">
+    <h2>Who's playing?</h2>
+    <div id="player-list"></div>
+    <button class="btn btn-secondary" onclick="addPlayer()">+ Add player</button>
+    <button class="btn btn-primary" id="start-btn" onclick="startGame()">Start game</button>
+  </div>
+</div>
+
+<!-- ══════════ SCORECARD SCREEN ══════════ -->
+<div id="scorecard-screen">
+  <div class="scorecard-header">
+    <h1>Yatzy Scorecard</h1>
+    <button class="btn-new-game" onclick="newGame()">New game</button>
+  </div>
+
+  <div class="table-wrap">
+    <table id="scorecard-table"></table>
+  </div>
+
+  <div class="calculate-wrap">
+    <button class="btn btn-calculate" onclick="calculate()">Calculate scores</button>
+  </div>
+
+  <div id="results-panel">
+    <h2 id="results-heading">Final Results</h2>
+    <div class="results-grid" id="results-grid"></div>
+  </div>
+</div>
+
+<script>
+  // ── Categories ──────────────────────────────────────────────────────
+  const UPPER = [
+    { id: 'ones',   name: 'Ones',   hint: 'Sum of all 1s', example: [1] },
+    { id: 'twos',   name: 'Twos',   hint: 'Sum of all 2s', example: [2, 2] },
+    { id: 'threes', name: 'Threes', hint: 'Sum of all 3s', example: [3, 3, 3] },
+    { id: 'fours',  name: 'Fours',  hint: 'Sum of all 4s', example: [4, 4] },
+    { id: 'fives',  name: 'Fives',  hint: 'Sum of all 5s', example: [5, 5, 5] },
+    { id: 'sixes',  name: 'Sixes',  hint: 'Sum of all 6s', example: [6, 6] },
+  ];
+
+  const LOWER = [
+    { id: 'one_pair',     name: 'One Pair',        hint: 'Sum of the pair',     example: [4, 4] },
+    { id: 'two_pairs',    name: 'Two Pairs',        hint: 'Sum of both pairs',   example: [3, 3, 5, 5] },
+    { id: 'three_kind',   name: 'Three of a Kind',  hint: 'Sum of the three',    example: [5, 5, 5] },
+    { id: 'four_kind',    name: 'Four of a Kind',   hint: 'Sum of the four',     example: [6, 6, 6, 6] },
+    { id: 'sm_straight',  name: 'Small Straight',   hint: '1–2–3–4–5 = 15 pts',  example: [1, 2, 3, 4, 5] },
+    { id: 'lg_straight',  name: 'Large Straight',   hint: '2–3–4–5–6 = 20 pts',  example: [2, 3, 4, 5, 6] },
+    { id: 'full_house',   name: 'Full House',        hint: 'Three + a pair',      example: [3, 3, 3, 5, 5] },
+    { id: 'chance',       name: 'Chance',            hint: 'Sum of all five dice', example: [2, 3, 4, 5, 6] },
+    { id: 'yatzy',        name: 'Yatzy',             hint: 'Five of a kind = 50 pts', example: [5, 5, 5, 5, 5] },
+  ];
+
+  // ── State ────────────────────────────────────────────────────────────
+  let players = [];
+
+  // ── Setup helpers ────────────────────────────────────────────────────
+  function renderPlayerList() {
+    const list = document.getElementById('player-list');
+    list.innerHTML = players.map((p, i) => `
+      <div class="player-row">
+        <input type="text" value="${p}" maxlength="18"
+               placeholder="Player ${i + 1}"
+               oninput="players[${i}] = this.value; updateStartBtn()"
+               onkeydown="if(event.key==='Enter') { event.preventDefault(); addPlayer(); }">
+        ${players.length > 1
+          ? `<button class="btn-remove" onclick="removePlayer(${i})" title="Remove">×</button>`
+          : ''}
+      </div>`).join('');
+    updateStartBtn();
+  }
+
+  function addPlayer() {
+    if (players.length >= 8) return;
+    players.push('');
+    renderPlayerList();
+    // Focus the new input
+    const inputs = document.querySelectorAll('#player-list input');
+    inputs[inputs.length - 1].focus();
+  }
+
+  function removePlayer(i) {
+    players.splice(i, 1);
+    renderPlayerList();
+  }
+
+  function updateStartBtn() {
+    const btn = document.getElementById('start-btn');
+    const valid = players.some(p => p.trim().length > 0);
+    btn.disabled = !valid;
+  }
+
+  function startGame() {
+    // Sanitise player names
+    players = players.map((p, i) => p.trim() || `Player ${i + 1}`);
+    document.getElementById('setup-screen').style.display = 'none';
+    document.getElementById('scorecard-screen').style.display = 'block';
+    buildTable();
+  }
+
+  function newGame() {
+    document.getElementById('results-panel').style.display = 'none';
+    document.getElementById('scorecard-screen').style.display = 'none';
+    document.getElementById('setup-screen').style.display = 'flex';
+    players = [''];
+    renderPlayerList();
+  }
+
+  // ── Table builder ────────────────────────────────────────────────────
+  function buildTable() {
+    const t = document.getElementById('scorecard-table');
+    t.innerHTML = '';
+
+    // Header row
+    const thead = t.createTHead();
+    const hr = thead.insertRow();
+    const corner = document.createElement('th');
+    corner.className = 'corner-cell';
+    hr.appendChild(corner);
+    players.forEach(p => {
+      const th = document.createElement('th');
+      th.className = 'player-name-cell';
+      th.textContent = p;
+      hr.appendChild(th);
+    });
+
+    const tbody = t.createTBody();
+
+    // Upper section
+    addSectionHeader(tbody, 'Upper Section');
+    UPPER.forEach(cat => addCategoryRow(tbody, cat));
+    addSubtotalRow(tbody, 'upper-subtotal', 'Upper total', false);
+    addBonusRow(tbody);
+    addSubtotalRow(tbody, 'upper-total', 'Upper + Bonus', true);
+
+    // Lower section
+    addSectionHeader(tbody, 'Lower Section');
+    LOWER.forEach(cat => addCategoryRow(tbody, cat));
+    addSubtotalRow(tbody, 'lower-total', 'Lower total', true);
+
+    // Grand total
+    addTotalRow(tbody);
+  }
+
+  function addSectionHeader(tbody, label) {
+    const tr = tbody.insertRow();
+    tr.className = 'section-header';
+    const td = tr.insertCell();
+    td.colSpan = players.length + 1;
+    td.textContent = label;
+  }
+
+  // Pip layout per die face (3×3 grid positions, coords on a 100×100 face)
+  const PIP_POS = {
+    1: [[50, 50]],
+    2: [[28, 28], [72, 72]],
+    3: [[28, 28], [50, 50], [72, 72]],
+    4: [[28, 28], [72, 28], [28, 72], [72, 72]],
+    5: [[28, 28], [72, 28], [50, 50], [28, 72], [72, 72]],
+    6: [[28, 28], [72, 28], [28, 50], [72, 50], [28, 72], [72, 72]],
+  };
+
+  function dieSVG(n) {
+    const pips = (PIP_POS[n] || [])
+      .map(([cx, cy]) => `<circle cx="${cx}" cy="${cy}" r="9"/>`)
+      .join('');
+    return `<svg class="die" viewBox="0 0 100 100" aria-label="die showing ${n}">` +
+           `<rect x="6" y="6" width="88" height="88" rx="16"/>${pips}</svg>`;
+  }
+
+  function diceRow(values) {
+    return `<span class="dice-row">${values.map(dieSVG).join('')}</span>`;
+  }
+
+  function addCategoryRow(tbody, cat) {
+    const tr = tbody.insertRow();
+    const label = tr.insertCell();
+    label.className = 'cat-label';
+    label.innerHTML = `<span class="cat-name">${cat.name}</span>` +
+                      `<span class="cat-hint">${cat.hint}</span>` +
+                      diceRow(cat.example);
+
+    players.forEach((_, pi) => {
+      const td = tr.insertCell();
+      td.className = 'score-cell';
+      const inp = document.createElement('input');
+      inp.type = 'number';
+      inp.inputMode = 'numeric';
+      inp.pattern = '[0-9]*';
+      inp.min = '0';
+      inp.max = '99';
+      inp.placeholder = '–';
+      inp.id = `${cat.id}_${pi}`;
+      inp.setAttribute('aria-label', `${cat.name} for player ${pi + 1}`);
+      td.appendChild(inp);
+    });
+  }
+
+  function addSubtotalRow(tbody, rowId, label, bold) {
+    const tr = tbody.insertRow();
+    tr.className = 'subtotal-row';
+    tr.id = rowId;
+    const td = tr.insertCell();
+    td.className = 'cat-label';
+    td.textContent = label;
+
+    players.forEach((_, pi) => {
+      const td2 = tr.insertCell();
+      td2.className = 'score-cell';
+      td2.id = `${rowId}_${pi}`;
+      td2.textContent = '–';
+    });
+  }
+
+  function addBonusRow(tbody) {
+    const tr = tbody.insertRow();
+    tr.className = 'bonus-row subtotal-row';
+    tr.id = 'bonus-row';
+    const td = tr.insertCell();
+    td.className = 'cat-label';
+    td.innerHTML = '<span class="cat-name">Bonus</span><span class="cat-hint">+50 if upper ≥ 63</span>';
+
+    players.forEach((_, pi) => {
+      const td2 = tr.insertCell();
+      td2.className = 'score-cell';
+      td2.id = `bonus_${pi}`;
+      td2.textContent = '–';
+    });
+  }
+
+  function addTotalRow(tbody) {
+    const tr = tbody.insertRow();
+    tr.className = 'total-row';
+    tr.id = 'grand-total-row';
+    const td = tr.insertCell();
+    td.textContent = 'Grand Total';
+
+    players.forEach((_, pi) => {
+      const td2 = tr.insertCell();
+      td2.className = 'score-cell';
+      td2.id = `grand_${pi}`;
+      td2.textContent = '–';
+    });
+  }
+
+  // ── Calculate ────────────────────────────────────────────────────────
+  function getVal(id) {
+    const el = document.getElementById(id);
+    if (!el) return 0;
+    const v = parseInt(el.value, 10);
+    return isNaN(v) ? 0 : v;
+  }
+
+  function calculate() {
+    const results = [];
+
+    players.forEach((name, pi) => {
+      // Upper subtotal
+      const upperSum = UPPER.reduce((s, cat) => s + getVal(`${cat.id}_${pi}`), 0);
+      document.getElementById(`upper-subtotal_${pi}`).textContent = upperSum;
+
+      // Bonus
+      const bonus = upperSum >= 63 ? 50 : 0;
+      document.getElementById(`bonus_${pi}`).textContent = bonus || '–';
+
+      // Upper + bonus
+      const upperTotal = upperSum + bonus;
+      document.getElementById(`upper-total_${pi}`).textContent = upperTotal;
+
+      // Lower subtotal
+      const lowerSum = LOWER.reduce((s, cat) => s + getVal(`${cat.id}_${pi}`), 0);
+      document.getElementById(`lower-total_${pi}`).textContent = lowerSum;
+
+      // Grand total
+      const grand = upperTotal + lowerSum;
+      document.getElementById(`grand_${pi}`).textContent = grand;
+
+      results.push({ name, upperSum, bonus, upperTotal, lowerSum, grand });
+    });
+
+    // Results panel
+    const maxScore = Math.max(...results.map(r => r.grand));
+    const panel = document.getElementById('results-panel');
+    const grid = document.getElementById('results-grid');
+
+    document.getElementById('results-heading').innerHTML =
+      `${diceRow([5, 5])} Final Results ${diceRow([5, 5])}`;
+
+    const sorted = [...results].sort((a, b) => b.grand - a.grand);
+    grid.innerHTML = sorted.map((r, rank) => `
+      <div class="result-card ${r.grand === maxScore ? 'winner' : ''}">
+        <div>
+          <span class="player-name">${r.name}</span>
+          ${r.grand === maxScore ? '<span class="winner-badge">Winner!</span>' : ''}
+          ${r.grand === maxScore ? `<div class="winner-dice">${diceRow([5, 5, 5, 5, 5])}</div>` : ''}
+        </div>
+        <div class="score-breakdown">
+          <div class="total-score">${r.grand}</div>
+          <div class="breakdown-detail">Upper ${r.upperSum}${r.bonus ? ' +50 bonus' : ''} · Lower ${r.lowerSum}</div>
+        </div>
+      </div>`).join('');
+
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────
+  players = ['', ''];
+  renderPlayerList();
+</script>
+</body>
+</html>
