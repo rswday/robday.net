@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Margate — A Weekend by the Sea</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#13262f;          /* deep sea ink, body text */
+    --paper:#f6efe2;        /* warm pale sand, content bg */
+    --paper-2:#efe5d3;      /* slightly deeper sand */
+    --sea-deep:#0c2230;     /* night sea */
+    --sea:#1c4f5e;          /* teal sea */
+    --horizon:#e89a4d;      /* amber horizon */
+    --coral:#e2715f;        /* sunset coral */
+    --pink:#e98a82;         /* warm pink */
+    --rule:#d9cbb2;         /* hairline on sand */
+    --muted:#5e6f73;        /* muted ink */
+    --tag:#1c4f5e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Hanken Grotesk",system-ui,sans-serif;
+    color:var(--ink);
+    background:var(--paper);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    min-height:78vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    overflow:hidden;
+    color:#fff;
+    background:
+      linear-gradient(to bottom,
+        var(--sea-deep) 0%,
+        #173a4a 30%,
+        #6a4a52 56%,
+        var(--coral) 72%,
+        var(--horizon) 84%,
+        #f0b86a 92%,
+        var(--sea) 92%,
+        #123e49 100%);
+  }
+  /* the sun, sitting on the horizon line at 92% */
+  .sun{
+    position:absolute;
+    left:50%;
+    bottom:8%;
+    width:170px;height:170px;
+    transform:translate(-50%,40%);
+    border-radius:50%;
+    background:radial-gradient(circle at 50% 45%, #fff3d6 0%, #ffd98a 38%, #f6b65a 70%, #ef9d4a 100%);
+    box-shadow:0 0 80px 30px rgba(255,210,130,.45);
+    animation:rise 1.6s cubic-bezier(.22,.61,.36,1) both;
+  }
+  @keyframes rise{from{transform:translate(-50%,90%);opacity:.2}to{transform:translate(-50%,40%);opacity:1}}
+  /* sea shimmer reflection */
+  .hero::after{
+    content:"";
+    position:absolute;left:0;right:0;bottom:0;height:8%;
+    background:linear-gradient(to bottom, rgba(255,200,120,.35), transparent);
+    mix-blend-mode:screen;
+  }
+  .hero-inner{
+    position:relative;
+    z-index:2;
+    width:100%;
+    max-width:1000px;
+    margin:0 auto;
+    padding:0 28px 7vh;
+  }
+  .eyebrow{
+    font-size:.78rem;
+    letter-spacing:.34em;
+    text-transform:uppercase;
+    font-weight:600;
+    opacity:.92;
+    margin-bottom:18px;
+  }
+  .hero h1{
+    font-family:"Fraunces",serif;
+    font-weight:400;
+    font-size:clamp(3.6rem,13vw,8.5rem);
+    line-height:.92;
+    letter-spacing:-.01em;
+    text-shadow:0 2px 30px rgba(10,25,35,.35);
+  }
+  .hero h1 em{font-style:italic}
+  .hero .dates{
+    margin-top:14px;
+    font-size:clamp(1rem,2.4vw,1.35rem);
+    font-weight:500;
+    opacity:.95;
+  }
+  .hero .blurb{
+    margin-top:18px;
+    max-width:40ch;
+    font-size:1.05rem;
+    opacity:.9;
+  }
+
+  /* ---------- LAYOUT ---------- */
+  .wrap{max-width:1000px;margin:0 auto;padding:0 28px}
+  .schedule{padding:clamp(48px,8vw,96px) 0 32px}
+
+  .day{
+    display:grid;
+    grid-template-columns:200px 1fr;
+    gap:24px;
+    padding:40px 0;
+    border-top:1px solid var(--rule);
+  }
+  .day:first-of-type{border-top:none}
+  .day-head{position:sticky;top:24px;align-self:start}
+  .day-name{
+    font-family:"Fraunces",serif;
+    font-size:1.9rem;
+    font-weight:500;
+    line-height:1;
+  }
+  .day-date{
+    margin-top:6px;
+    font-size:.8rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-weight:600;
+  }
+
+  .stops{display:flex;flex-direction:column;gap:4px}
+  .stop{
+    display:grid;
+    grid-template-columns:88px 1fr;
+    gap:20px;
+    padding:16px 0;
+    border-bottom:1px solid rgba(217,203,178,.55);
+  }
+  .stop:last-child{border-bottom:none}
+  .time{
+    font-variant-numeric:tabular-nums;
+    font-weight:600;
+    font-size:.95rem;
+    color:var(--sea);
+    padding-top:2px;
+  }
+  .time.soft{color:var(--muted);font-weight:500}
+  .stop h3{
+    font-family:"Fraunces",serif;
+    font-weight:500;
+    font-size:1.18rem;
+    line-height:1.2;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .stop p{margin-top:5px;color:var(--muted);font-size:.97rem;max-width:58ch}
+  .stop a{color:var(--coral);text-decoration:none;border-bottom:1px solid rgba(226,113,95,.35)}
+  .stop a:hover{border-bottom-color:var(--coral)}
+  .tag{
+    font-size:.62rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    font-weight:600;
+    color:#fff;
+    background:var(--tag);
+    padding:3px 8px;
+    border-radius:100px;
+    transform:translateY(-1px);
+  }
+  .tag.plan{background:transparent;color:var(--sea);border:1px solid var(--sea)}
+
+  /* ---------- SWAP-INS ---------- */
+  .extras{
+    background:var(--paper-2);
+    border-radius:18px;
+    padding:clamp(28px,4vw,44px);
+    margin:24px 0 0;
+  }
+  .extras h2{
+    font-family:"Fraunces",serif;
+    font-weight:500;
+    font-size:1.6rem;
+    margin-bottom:6px;
+  }
+  .extras .lede{color:var(--muted);margin-bottom:26px;font-size:.98rem}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .card{}
+  .card .k{
+    font-family:"Fraunces",serif;
+    font-size:1.12rem;
+    font-weight:500;
+    margin-bottom:4px;
+  }
+  .card p{color:var(--muted);font-size:.93rem}
+
+  /* ---------- FOOTER ---------- */
+  .foot{
+    max-width:1000px;margin:0 auto;
+    padding:40px 28px 64px;
+    color:var(--muted);
+    font-size:.88rem;
+    border-top:1px solid var(--rule);
+    margin-top:40px;
+  }
+  .foot strong{color:var(--ink);font-weight:600}
+
+  @media(max-width:720px){
+    .day{grid-template-columns:1fr;gap:14px}
+    .day-head{position:static;top:auto}
+    .stop{grid-template-columns:72px 1fr;gap:14px}
+    .cards{grid-template-columns:1fr}
+    .sun{width:120px;height:120px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .sun{animation:none;transform:translate(-50%,40%)}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+
+  <header class="hero">
+    <div class="sun" aria-hidden="true"></div>
+    <div class="hero-inner">
+      <p class="eyebrow">Kent Coast · 3&ndash;5 July</p>
+      <h1>Margate<br><em>by the sea</em></h1>
+      <p class="dates">Friday 3 &middot; Saturday 4 &middot; Sunday 5 July 2026</p>
+      <p class="blurb">Saltwater and Turner skies, a 9am parkrun, and the slow business of watching the sun go down over the North Sea.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="schedule">
+
+      <article class="day">
+        <div class="day-head">
+          <div class="day-name">Friday</div>
+          <div class="day-date">3 July</div>
+        </div>
+        <div class="stops">
+          <div class="stop">
+            <div class="time soft">PM</div>
+            <div>
+              <h3>Arrive &amp; settle in</h3>
+              <p>Drop the bags, then wander Margate Old Town &mdash; independent shops, galleries, and an easy first drink to land into the weekend.</p>
+            </div>
+          </div>
+          <div class="stop">
+            <div class="time">17:30</div>
+            <div>
+              <h3>Sauna on the beach <span class="tag">Booked</span></h3>
+              <p>Heat by the water, then straight out into the sea air.</p>
+            </div>
+          </div>
+          <div class="stop">
+            <div class="time soft">Eve</div>
+            <div>
+              <h3>Dinner, then the sunset</h3>
+              <p>Eat in the Old Town and time it for the famous Margate sunset, which lands around 21:15 in early July. Sunset pints at The Harbour Arms on the stone pier, or The Two Halves on the seafront.</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="day">
+        <div class="day-head">
+          <div class="day-name">Saturday</div>
+          <div class="day-date">4 July</div>
+        </div>
+        <div class="stops">
+          <div class="stop">
+            <div class="time">09:00</div>
+            <div>
+              <h3>Margate parkrun <span class="tag plan">Planned</span></h3>
+              <p>Free 5k at Palm Bay, Cliftonville, every Saturday at 9am. Bring a scannable barcode or there's no time recorded.</p>
+            </div>
+          </div>
+          <div class="stop">
+            <div class="time">~10:00</div>
+            <div>
+              <h3>Walpole Bay tidal pool</h3>
+              <p>A dip in the UK's largest tidal pool, right next door to the parkrun finish. Coffee after at the Horse Box. Best once the pool walls are exposed but it's still full &mdash; confirm the morning tide nearer the day.</p>
+            </div>
+          </div>
+          <div class="stop">
+            <div class="time soft">Late AM</div>
+            <div>
+              <h3>Brunch &amp; freshen up</h3>
+              <p>Refuel and dry off before the afternoon.</p>
+            </div>
+          </div>
+          <div class="stop">
+            <div class="time soft">PM</div>
+            <div>
+              <h3>Turner Contemporary &amp; the Old Town</h3>
+              <p>Free entry, open Tue&ndash;Sun, right on the main sands. Pair it with the Old Town and a beach stroll &mdash; or swap in the Shell Grotto or Dreamland if the mood takes you.</p>
+            </div>
+          </div>
+          <div class="stop">
+            <div class="time">19:30</div>
+            <div>
+              <h3>Dinner at Lilies <span class="tag">Booked</span></h3>
+              <p>The main event of the evening.</p>
+            </div>
+          </div>
+          <div class="stop">
+            <div class="time soft">Later</div>
+            <div>
+              <h3>A nightcap in Cliftonville</h3>
+              <p>If there's road left in the night.</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="day">
+        <div class="day-head">
+          <div class="day-name">Sunday</div>
+          <div class="day-date">5 July</div>
+        </div>
+        <div class="stops">
+          <div class="stop">
+            <div class="time soft">AM</div>
+            <div>
+              <h3>A slow brunch</h3>
+              <p>No alarms.</p>
+            </div>
+          </div>
+          <div class="stop">
+            <div class="time soft">Pre-train</div>
+            <div>
+              <h3>One last thing</h3>
+              <p>The Shell Grotto and its underground shell mosaics, or a coastal walk round to Botany Bay for the chalk stacks. Then the train home.</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </section>
+
+    <section class="extras">
+      <h2>If there's time</h2>
+      <p class="lede">Easy swap-ins, depending on weather and pace.</p>
+      <div class="cards">
+        <div class="card">
+          <div class="k">Dreamland</div>
+          <p>Retro rides and seaside nostalgia, often with a gig on.</p>
+        </div>
+        <div class="card">
+          <div class="k">Xylo &amp; Fez</div>
+          <p>A seafront microbrewery taproom with sunset views, and a quirky memorabilia-stuffed micropub with live music.</p>
+        </div>
+        <div class="card">
+          <div class="k">Crab Museum</div>
+          <p>Offbeat, short, and very Margate.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p><strong>One thing to check:</strong> the tidal pool depends entirely on the tide, and times shift through the week &mdash; confirm on kent-tides.com about six days out. There are no toilets or lifeguards at Walpole Bay itself, so plan around that.</p>
+  </footer>
+
+</body>
+</html>
